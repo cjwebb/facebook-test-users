@@ -1,4 +1,5 @@
-var redis = require('redis'); 
+var redis = require('redis');
+var http = require('http'); 
 
 // setup redis
 client = redis.createClient();
@@ -6,22 +7,25 @@ client.on("error", function (err) {
 	console.log("Error " + err);
 });
 
+function callFacebook(request, response) {
+	
+}
+
 function getAUser(request, response) {
-    response.writeHead(200, {"Content-Type": "application/json"});
-	
-	response.write(JSON.stringify({
-		"user":1,
-		"access_token": "some-access-token"
-	}));
-	
-	response.end();
+	response.writeHead(200, {"Content-Type": "application/json"});
+	client.rpoplpush("users", "used", function(err, reply){
+		response.write(reply);
+		response.end();
+	});
 }
 
 /* fetch a facebook test user, and put it in redis */
 function populate(request, response) {
+
     response.writeHead(200, {"Content-Type": "text/html"});
 
-	client.sadd("users", "user:bob");
+	// need to get a facebook user instead of bob
+	client.lpush("users", "user:bob");
 	client.hmset("user:bob", "access_token", "an-access-token");
 
 	response.write("Added Bob");

@@ -4,6 +4,7 @@ var requestHandlers = require("./requestHandlers");
 
 var handle = {}
 handle["/"] = requestHandlers.getAUser;
+handle["/callfb"] = requestHandlers.callFacebook;s
 handle["/populate"] = requestHandlers.populate;
 
 server.start(router.route, handle);
