@@ -12,8 +12,7 @@ client2.on("error", function (err) {
 	console.log("Error " + err);
 });
 
-
-function callFacebook(request, response) {
+function callFacebook(req, res) {
 	var path = "https://graph.facebook.com/"+config.facebook.appId+"/accounts/test-users?installed=true&method=post";
 	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
 
@@ -28,20 +27,16 @@ function callFacebook(request, response) {
 	    }
 	});
 	
-	response.writeHead(200, {"Content-Type": "application/json"});
-    response.write(JSON.stringify({"adding": 1}));
-    response.end();
+	res.json({"adding": 1});
 }
 
-function getAUser(request, response) {
-	client.brpoplpush("users", "used", 60, function(error, reply){
-		if (!error) {
-			response.writeHead(200, {"Content-Type": "application/json"});
-			response.write(reply);
-			response.end();
-			// send a redis publish command
+function getAUser(req, res) {
+	client.brpoplpush("users", "used", 6, function(error, user){
+		if (!error && user !== null) {
+			res.json(user);
 		} else {
 			console.log(error);
+			res.json(503, {"error": "no facebook test users available"});
 		}
 	});
 }
@@ -56,19 +51,5 @@ function deleteUser(request, response) {
 	client.lrem("users", 0, "some:key");
 }
 
-/* fetch a facebook test user, and put it in redis */
-function populate(request, response) {
-
-    response.writeHead(200, {"Content-Type": "text/html"});
-
-	// need to get a facebook user instead of bob
-	client.lpush("users", "user:bob");
-	client.hmset("user:bob", "access_token", "an-access-token");
-
-	response.write("Added Bob");
-	response.end();
-}
-
 exports.getAUser = getAUser;
-exports.populate = populate;
 exports.callFacebook = callFacebook;

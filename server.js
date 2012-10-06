@@ -1,15 +1,8 @@
-var http = require("http");
-var url = require("url");
+var express = require('express');
+var requestHandlers = require('./requestHandlers');
 
-function start(route, handle) {
-  function onRequest(request, response) {
-    var pathname = url.parse(request.url).pathname;
-    console.log("Request for " + pathname + " received.");
-    route(handle, pathname, request, response);
-  }
+var app = express();
+app.get('/callfb', requestHandlers.callFacebook);
+app.get('/', requestHandlers.getAUser);
 
-  http.createServer(onRequest).listen(8888);
-  console.log("Server has started on port 8888.");
-}
-
-exports.start = start;
+app.listen(1337);
