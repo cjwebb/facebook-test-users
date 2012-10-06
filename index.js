@@ -4,7 +4,8 @@ var requestHandlers = require("./requestHandlers");
 
 var handle = {}
 handle["/"] = requestHandlers.getAUser;
-handle["/callfb"] = requestHandlers.callFacebook;s
+handle["/callfb"] = requestHandlers.callFacebook;
 handle["/populate"] = requestHandlers.populate;
 
 server.start(router.route, handle);
+// start worker thread too
