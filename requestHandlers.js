@@ -17,21 +17,26 @@ function callFacebook(req, res) {
 	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
 
 	rquest(facebook, function (error, resp, body) {
-	    if (!error) {
+		if (!error) {
 	    	newUser = JSON.parse(body);
-	    	console.log(newUser);
-	        client2.hmset("user:"+newUser.id, "access_token", newUser.access_token);
-	        client2.lpush("users", "user:"+newUser.id);
+	    	if (newUser.hasOwnProperty("id") && newUser.hasOwnProperty("access_token")) {
+	    		console.log("Adding new user: "+newUser.id);
+	    		console.log(newUser);
+	    		client2.hmset("user:"+newUser.id, "access_token", newUser.access_token);
+	    		client2.lpush("users", "user:"+newUser.id);
+	    	} else {
+	    		console.log("Facebook returned error:")
+	    		console.log(newUser)
+	    	}
 	    } else {
 	        console.log(error);
 	    }
 	});
-	
 	res.json({"adding": 1});
 }
 
 function getAUser(req, res) {
-	client.brpoplpush("users", "used", 6, function(error, user){
+	client.brpoplpush("users", "used", 60, function(error, user){
 		if (!error && user !== null) {
 			res.json(user);
 		} else {
