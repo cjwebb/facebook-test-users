@@ -12,6 +12,24 @@ client2.on("error", function (err) {
 	console.log("Error " + err);
 });
 
+// TODO: extract facebook user create out of requestHandlers
+function createNewUser(callback) {
+	var path = "https://graph.facebook.com/"+config.facebook.appId+"/accounts/test-users?installed=true&method=post";
+	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
+
+	rquest(facebook, function (error, resp, body) {
+		if (!error && resp.statusCode == 200) {
+			newUser = JSON.parse(body);
+			if (newUser.hasOwnProperty("id") && newUser.hasOwnProperty("access_token")) {
+				// return the new user to callback
+			} // if it has oauth, don't retry
+			  // else failure + retry
+		} else {
+			// some kind of retry? send failure to callback?
+		}
+	}
+}
+
 function callFacebook(req, res) {
 	var path = "https://graph.facebook.com/"+config.facebook.appId+"/accounts/test-users?installed=true&method=post";
 	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
