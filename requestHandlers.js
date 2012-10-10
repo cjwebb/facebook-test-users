@@ -26,14 +26,22 @@ function getAUser(req, res) {
 }
 
 // TODO:
-function deleteAllUsers(request, response) {}
+function deleteAllUsers(request, response) {
+	// push users into used
+	// get all used
+	// hit facebook to delete them all. with retries.
+}
 
-// TODO:
 function deleteUser(request, response) {
+	facebook.deleteUser(request.params.id);
+	// hit facebook
 	// https://graph.facebook.com/TEST_USER_ID?method=delete&access_token=TEST_USER_ACCESS_TOKEN (OR) APP_ACCESS_TOKEN
-	// delete from users list
-	client.lrem("users", 0, "some:key");
+	// if good response, delete from users list
+	//client.lrem("users", 0, "some:key");
+	// else, retry
+	response.json(202, {"status": "Deleting "+request.params.id})
 }
 
 exports.getAUser = getAUser;
 exports.callFacebook = callFacebook;
+exports.deleteUser = deleteUser;

@@ -44,4 +44,9 @@ function createNewUser(callback) {
 	});
 }
 
+function deleteUser(id, callback) {
+	console.log("Deleting User: "+id);
+}
+
 exports.createNewUser = createNewUser;
+exports.deleteUser = deleteUser;
