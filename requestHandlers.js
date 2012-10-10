@@ -1,55 +1,16 @@
 var redis = require('redis');
-var rquest = require("request");
-var config = require('./config');
+var facebook = require('./facebookFunctions');
 
 client = redis.createClient();
 client.on("error", function (err) {
 	console.log("Error " + err);
 });
 
-client2 = redis.createClient();
-client2.on("error", function (err) {
-	console.log("Error " + err);
-});
-
-// TODO: extract facebook user create out of requestHandlers
-function createNewUser(callback) {
-	var path = "https://graph.facebook.com/"+config.facebook.appId+"/accounts/test-users?installed=true&method=post";
-	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
-
-	rquest(facebook, function (error, resp, body) {
-		if (!error && resp.statusCode == 200) {
-			newUser = JSON.parse(body);
-			if (newUser.hasOwnProperty("id") && newUser.hasOwnProperty("access_token")) {
-				// return the new user to callback
-			} // if it has oauth, don't retry
-			  // else failure + retry
-		} else {
-			// some kind of retry? send failure to callback?
-		}
-	}
-}
-
+/**
+ * Request Handlers
+ */
 function callFacebook(req, res) {
-	var path = "https://graph.facebook.com/"+config.facebook.appId+"/accounts/test-users?installed=true&method=post";
-	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
-
-	rquest(facebook, function (error, resp, body) {
-		if (!error) {
-	    	newUser = JSON.parse(body);
-	    	if (newUser.hasOwnProperty("id") && newUser.hasOwnProperty("access_token")) {
-	    		console.log("Adding new user: "+newUser.id);
-	    		console.log(newUser);
-	    		client2.hmset("user:"+newUser.id, "access_token", newUser.access_token);
-	    		client2.lpush("users", "user:"+newUser.id);
-	    	} else {
-	    		console.log("Facebook returned error:")
-	    		console.log(newUser)
-	    	}
-	    } else {
-	        console.log(error);
-	    }
-	});
+	facebook.createNewUser();
 	res.json({"adding": 1});
 }
 
