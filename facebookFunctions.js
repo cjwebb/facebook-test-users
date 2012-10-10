@@ -2,8 +2,8 @@ var redis = require('redis');
 var rquest = require("request");
 var config = require('./config');
 
-client = redis.createClient();
-client.on("error", function (err) {
+fbClient = redis.createClient();
+fbClient.on("error", function (err) {
 	console.log("Error " + err);
 });
 
@@ -22,8 +22,8 @@ function createNewUser(callback) {
 	    		console.log(newUser);
 	    		
 	    		// hooray, we have a user. stick in redis
-	    		client.hmset("user:"+newUser.id, "access_token", newUser.access_token);
-	    		client.lpush("users", "user:"+newUser.id);
+	    		fbClient.hmset("user:"+newUser.id, "access_token", newUser.access_token);
+	    		fbClient.lpush("users", "user:"+newUser.id);
 	    		
 	    		if (typeof callback !== 'undefined') callback(newUser);
 			} else {

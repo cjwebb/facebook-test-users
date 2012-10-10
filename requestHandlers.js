@@ -18,6 +18,7 @@ function getAUser(req, res) {
 	client.brpoplpush("users", "used", 60, function(error, user){
 		if (!error && user !== null) {
 			res.json(user);
+			client.publish("user_requested", "1 user requested");
 		} else {
 			console.log(error);
 			res.json(503, {"error": "no facebook test users available"});
