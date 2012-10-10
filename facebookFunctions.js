@@ -1,3 +1,6 @@
+/**
+ * Functions to interact with Facebook 
+ */
 var redis = require('redis');
 var rquest = require("request");
 var config = require('./config');
@@ -7,9 +10,7 @@ fbClient.on("error", function (err) {
 	console.log("Error " + err);
 });
 
-/**
- * Functions to interact with Facebook 
- */
+// create a brand new test user
 function createNewUser(callback) {
 	var path = "https://graph.facebook.com/"+config.facebook.appId+"/accounts/test-users?installed=true&method=post";
 	var facebook = path + "&access_token=" + config.facebook.appAccessToken;
@@ -19,12 +20,7 @@ function createNewUser(callback) {
 			newUser = JSON.parse(body);
 			if (newUser.hasOwnProperty("id") && newUser.hasOwnProperty("access_token")) {
 	    		console.log("Adding new user: "+newUser.id);
-	    		console.log(newUser);
-	    		
-	    		// hooray, we have a user. stick in redis
-	    		fbClient.hmset("user:"+newUser.id, "access_token", newUser.access_token);
-	    		fbClient.lpush("users", "user:"+newUser.id);
-	    		
+	    		console.log(newUser);	    		
 	    		if (typeof callback !== 'undefined') callback(newUser);
 			} else {
 	    		console.log("Facebook returned error:")
@@ -44,8 +40,18 @@ function createNewUser(callback) {
 	});
 }
 
+// delete a test user, by id
 function deleteUser(id, callback) {
 	console.log("Deleting User: "+id);
+	var deleteUser = "https://graph.facebook.com/"+id+"?method=delete"; 
+	var deleteUser = deleteUser + "&access_token=" + config.facebook.appAccessToken;
+	rquest(deleteUser, function(error, resp, body){
+		console.log(error);
+		console.log(body);
+		
+		// send error back if one happened
+		callback();
+	});
 }
 
 exports.createNewUser = createNewUser;

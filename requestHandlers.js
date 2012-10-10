@@ -1,48 +1,65 @@
 var redis = require('redis');
 var facebook = require('./facebookFunctions');
 
-client = redis.createClient();
-client.on("error", function (err) {
+function redisError(err) {
 	console.log("Error " + err);
-});
+}
+// client used to retrieve things from redis
+client = redis.createClient();
+client.on("error", redisError);
+// client2 used to put things into redis
+client2 = redis.createClient();
+client2.on("error", redisError);
 
 /**
  * Request Handlers
  */
-function callFacebook(req, res) {
-	facebook.createNewUser();
-	res.json({"adding": 1});
+function status(request, response) {
+	// TODO: retrieve the number of current facebook test users available
+	// is there anything else we care about?
+	// app secret, app id, access token?
+	client.llen("users", function(err, numUsers) {
+		response.json({"usersAvailable":numUsers});
+	});
 }
 
-function getAUser(req, res) {
+function callFacebook(request, response) {
+	facebook.createNewUser(function(user) {
+		client2.hmset("user:"+newUser.id, "access_token", newUser.access_token);
+		client2.lpush("users", "user:"+newUser.id);
+	});
+	response.json(202, {"status": "Adding 1"});
+}
+
+function getAUser(request, response) {
 	client.brpoplpush("users", "used", 60, function(error, user){
 		if (!error && user !== null) {
-			res.json(user);
+			response.json(user);
 			client.publish("user_requested", "1 user requested");
 		} else {
 			console.log(error);
-			res.json(503, {"error": "no facebook test users available"});
+			response.json(503, {"error": "no facebook test users available"});
 		}
 	});
 }
 
-// TODO:
 function deleteAllUsers(request, response) {
 	// push users into used
 	// get all used
 	// hit facebook to delete them all. with retries.
+	response.json(202, {"status": "Deleting all users"});
 }
 
 function deleteUser(request, response) {
-	facebook.deleteUser(request.params.id);
-	// hit facebook
-	// https://graph.facebook.com/TEST_USER_ID?method=delete&access_token=TEST_USER_ACCESS_TOKEN (OR) APP_ACCESS_TOKEN
-	// if good response, delete from users list
-	//client.lrem("users", 0, "some:key");
-	// else, retry
+	id = request.params.id;
+	facebook.deleteUser(id, function(error) {
+		if (!error) { client.lrem("used", 0, "user:"+id); }
+	});
 	response.json(202, {"status": "Deleting "+request.params.id})
 }
 
+exports.status = status;
 exports.getAUser = getAUser;
 exports.callFacebook = callFacebook;
 exports.deleteUser = deleteUser;
+exports.deleteAllUsers = deleteAllUsers;

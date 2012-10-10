@@ -7,11 +7,13 @@ redisClient.on("error", function (err) {
 	console.log("Error " + err);
 });
 
-
 var app = express();
 app.get('/callfb', requestHandlers.callFacebook);
 app.get('/', requestHandlers.getAUser);
 
+app.get('/status', requestHandlers.status);
+
+app.del('/facebook/users/', requestHandlers.deleteAllUsers);
 app.del('/facebook/user/:id', requestHandlers.deleteUser);
 
 // setup subscribe on redis channel to recreate users
