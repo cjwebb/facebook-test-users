@@ -15,12 +15,19 @@ client2.on("error", redisError);
  * Request Handlers
  */
 function status(request, response) {
-	// TODO: retrieve the number of current facebook test users available
-	// is there anything else we care about?
-	// app secret, app id, access token?
-	client.llen("users", function(err, numUsers) {
-		response.json({"usersAvailable":numUsers});
-	});
+	client.multi()
+		.llen("users")
+		.llen("used")
+		.exec(function(err, replies){
+			if (!err) {
+				status = {};
+				status.usersAvailable = replies[0];
+				status.usersUsed = replies[1];
+				response.json(status);
+			} else {
+				response.json(503, {"status": "redis errored"});
+			}
+		});
 }
 
 function callFacebook(request, response) {
