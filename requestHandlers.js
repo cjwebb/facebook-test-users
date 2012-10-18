@@ -4,10 +4,10 @@ var facebook = require('./facebookFunctions');
 function redisError(err) {
 	console.log("Error " + err);
 }
-// client used to retrieve things from redis
+// client used for blocking calls to redis
 client = redis.createClient();
 client.on("error", redisError);
-// client2 used to put things into redis
+// client2 used for non-blocking calls
 client2 = redis.createClient();
 client2.on("error", redisError);
 
@@ -41,7 +41,14 @@ function callFacebook(request, response) {
 function getAUser(request, response) {
 	client.brpoplpush("users", "used", 60, function(error, user){
 		if (!error && user !== null) {
-			response.json(user);
+			// id, substring user:
+			// access token
+			client2.hget(user, "access_token", function(error2, access_token){
+				userToReturn = {};
+				userToReturn.access_token = access_token;
+				userToReturn.id = user.substring(5, user.length);
+				response.json(userToReturn);
+			});
 			client.publish("user_requested", "1 user requested");
 		} else {
 			console.log(error);
